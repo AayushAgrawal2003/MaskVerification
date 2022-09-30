@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow import keras 
 import numpy as np
 
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI,UploadFile , File
 from io import BytesIO
 import nest_asyncio
@@ -14,6 +14,21 @@ import uvicorn
 MODEL = tf.keras.models.load_model("../my_h5_model.h5")
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 CLASS_NAMES =["with_mask" , "without_mask"] 
 @app.get('/index')
 async def home():
@@ -47,8 +62,5 @@ async def predict(file: UploadFile = File(...)):
 
 
 
-ngrok_tunnel = ngrok.connect(8000)
-print('Public URL:', ngrok_tunnel.public_url)
-nest_asyncio.apply()
-uvicorn.run(app, port=8000)
-
+if __name__ == "__main__":
+    uvicorn.run(app, host='localhost', port=8000)
